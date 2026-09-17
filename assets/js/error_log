@@ -1,0 +1,1 @@
+[16-Jan-2020 05:04:30 Asia/Jakarta] PHP Fatal error:  Call to undefined function base_url() in /home/coatesapp/public_html/assets/js/ajax.php on line 245

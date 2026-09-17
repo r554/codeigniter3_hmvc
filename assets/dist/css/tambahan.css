@@ -1,0 +1,101 @@
+.count
+{
+  color:white;
+  font-size:50px;
+}
+
+#loading { margin-top:75px; display:none; margin-left:500px; position: fixed; z-index: 9999;}
+
+#loading2 { 
+	margin-top:250px; 
+	margin-left:700px; 
+	position: fixed;  
+	z-index: 9999; 
+}
+
+#gambar-slider  img  { 
+	max-width:300px;
+	
+}
+
+.loading{ 
+	margin-top:250px; 
+	margin-left:700px; 
+	position: fixed;  
+	z-index: 9999; 
+	height:50px;
+}
+
+.batas-export {
+	margin-top:6px; ;
+}
+
+#loadingImg
+{
+	margin-left:140px;
+}
+
+
+.loading2
+{
+background: url('loader-ok.gif') no-repeat center;	
+display:none; 
+position: fixed; 
+z-index: 999; 
+margin-top:190px; 
+margin-left:432px;	
+width:128px;
+height:15px;
+transform: scale(1.2, 1.2);
+-ms-transform: scale(1.2, 1.2);
+-webkit-transform: scale(1.2, 1.2);
+}
+
+#slider  img  { 
+	max-width:180px;
+	margin-left:150px;
+	margin-top:20px;
+	margin-bottom:20px;	
+}
+
+
+#profile  img  { 
+	max-height:130px;
+	margin-left:140px;
+	margin-top:20px;
+	margin-bottom:20px;	
+}
+
+#produk  img  { 
+	max-height:130px;
+	margin-left:150px;
+	margin-top:20px;
+	margin-bottom:20px;	
+}
+
+#detail-produk  img  { 
+	max-height:130px;
+	margin-left:0px;
+	margin-top:20px;
+	margin-bottom:20px;	
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.4); /* IE */
+  -moz-transform: scale(1.4); /* FF */
+  -webkit-transform: scale(1.4); /* Safari and Chrome */
+  -o-transform: scale(1.4); /* Opera */
+  padding: 10px;
+  margin-right:5px;
+}
+
+
+
+
+
+
+
+
+

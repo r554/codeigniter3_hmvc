@@ -1,0 +1,260 @@
+/* Form */
+
+ a{
+text-decoration:none;
+}
+
+.input-form {
+	font-size: 18px;
+	padding: 10px 10px 10px 5px;
+	-webkit-appearance: none;
+	display: block;
+	color: #000000;
+	background-color:rgba(255,255,255,0.10);
+	width: 95%;
+	border: none;
+	border-radius: 0;
+	border-bottom: 1px solid #757575;
+	
+}
+
+input:focus  { outline: none; -webkit-transition:all 0.10s ease; 
+			 transition: all 0.10s ease;  
+			 border-bottom: 3px solid #0072bc;}
+/* Label */
+
+label {
+	color: #999; 
+	font-size: 16px;
+	position: absolute;
+	pointer-events: none;
+	left: 5px;
+	top: 10px;
+	-webkit-transition:all 0.2s ease;
+	transition: all 0.2s ease;	
+}
+
+/* active */
+
+input:focus ~ label, input.used ~ label,input:valid +label{
+  transform: translateY(-130%);
+  font-size: 0.90rem;
+	/* font-size: 14px; */
+	color: #0072bc;
+}
+
+
+
+/* active */
+
+input:focus ~ .bar:before, input:focus ~ .bar:after { width: 50%; }
+
+.bar:before, .bar:after {
+	content: '';
+	height: 2px; 
+	width: 0;
+	bottom: 1px; 
+	position: absolute;
+	background: #0072bc; 
+	-webkit-transition:all 0.2s ease; 
+	transition: all 0.2s ease;
+	
+}
+
+.bar:before { left: 50%; }
+
+.bar:after { right: 50%; }
+
+
+/* Highlight */
+
+.highlight {
+	position: absolute;
+	height: 60%; 
+	width: 100px; 
+	top: 25%; 
+	left: 0;
+	pointer-events: none;
+	opacity: 0.5;
+}
+
+
+/* active */
+
+input:focus ~ .highlight {
+	-webkit-animation: inputHighlighter 0.3s ease;
+	        animation: inputHighlighter 0.3s ease;
+}
+
+
+/* Animations */
+
+@-webkit-keyframes inputHighlighter {
+	from { background: #4a89dc; }
+	to 	{ width: 0; background: transparent; }
+}
+
+@keyframes inputHighlighter {
+	from { background: #4a89dc; }
+	to 	{ width: 0; background: transparent; }
+}
+
+.group { 
+	position: relative; 
+	margin-bottom: 40px; 
+}
+
+.group2 { 
+	position: relative; 
+	margin-top: -25px; 
+	margin-bottom: 35px;
+	margin-left:-150px;	
+}
+
+.form {
+  position: relative;
+  z-index: 1;
+  background-color:rgba(255,255,255,0.7);
+  max-width: 300px;
+  margin: 0 auto 100px;
+  padding: 30px;
+  text-align: center;
+}
+
+
+.form .thumbnail {
+  background: #0072bc;
+  width: 135px;
+  height: 135px;
+  margin: 0 auto 30px;
+  padding: 50px 30px;
+  border-top-left-radius: 100%;
+  border-top-right-radius: 100%;
+  border-bottom-left-radius: 100%;
+  border-bottom-right-radius: 100%;
+  box-sizing: border-box;
+ box-shadow: 0 0 5px 5px #dcdbda;
+-moz-box-shadow: 0 0 5px 5px #dcdbda;
+-webkit-box-shadow: 0 0 5px 5px#dcdbda;
+}
+.form .thumbnail img {
+  display: block;
+  width: 100%;
+  margin-top:-20px;
+}
+
+.form button {
+  outline: 0;
+  background: #0072bc;
+  width: 100%;
+  border: 0;
+  padding: 15px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  color: #FFFFFF;
+  font-size: 14px;
+  -webkit-transition: all 0.3 ease;
+  transition: all 0.3 ease;
+  cursor: pointer;
+}
+
+.form .message {
+  margin: 15px 0 0;
+  color: #050505;
+  font-size: 12px;
+}
+.form .message a {
+  color: #EF3B3A;
+  text-decoration: none;
+}
+.form .register-form {
+  display: none;
+}
+
+.form .lupa-password {
+  display: none;
+}
+
+.form .login-form2 {
+  display: none;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.container:before, .container:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.container .info {
+  margin: 30px auto;
+  text-align: center;
+}
+.container .info h1 {
+  margin: 0 0 15px;
+  padding: 0;
+  font-size: 33px;
+  font-weight: 200 bold;
+  color: #ffffff;
+}
+.container .info span {
+  color: #4d4d4d;
+  font-size: 12px;
+}
+.container .info span a {
+  color: #000000;
+  text-decoration: none;
+}
+.container .info span .fa {
+  color: #EF3B3A;
+}
+
+/* END Form */
+/* Demo Purposes */
+body {
+  background: #ccc;
+  font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body:before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: block;
+  background: rgba(255, 255, 255, 0.6);
+  width: 100%;
+  height: 100%;
+}
+
+
+#gambar {
+  z-index: -99;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+
+
+
+
+
+@media screen and (max-width: 730px) { 
+  #gambar {
+  width:100%;
+}
+}
