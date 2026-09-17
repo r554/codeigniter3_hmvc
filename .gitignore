@@ -1,0 +1,41 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime files
+apps/config/install.lock
+apps/logs/*
+!apps/logs/index.html
+apps/cache/*
+!apps/cache/index.html
+
+# User uploads and generated backups
+upload/*
+!upload/index.html
+backups/*
+!backups/index.html
+
+# Local database and temporary files
+*.sql
+*.sql.gz
+*.bak
+*.tmp
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependency and build artifacts
+node_modules/
+vendor/
+
+# PHP temporary files
+.phpunit.result.cache
+.php-cs-fixer.cache

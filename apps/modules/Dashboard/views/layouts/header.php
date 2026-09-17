@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><?php echo env('APP_NAME', 'My Application'); ?></title>
+    <title><?php echo env('APP_NAME', 'AdminBro'); ?></title>
 	 <link rel="icon" href="<?php echo base_url(); ?><?php echo env('APP_FAVICON', 'assets/tambahan/gambar/Coates_Indonesia.jpg'); ?>">
     <!-- meta -->
     
@@ -101,7 +101,7 @@
     <!-- mini logo for sidebar mini 50x50 pixels -->
     <span class="logo-mini"><b><?php echo substr(env('APP_NAME','App'),0,2); ?></b></span>
     <!-- logo for regular state and mobile devices -->
-    <span class="logo-lg"><b><?php echo env('APP_NAME', 'My Application'); ?></b></span>
+    <span class="logo-lg"><b><?php echo env('APP_NAME', 'AdminBro'); ?></b></span>
     </a>
 
   <!-- nav -->

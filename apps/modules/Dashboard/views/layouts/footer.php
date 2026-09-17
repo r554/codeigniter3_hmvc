@@ -8,7 +8,7 @@
 		Dashboard Admin
 	</div>
 	<!-- Default to the left -->
-	<strong><?php echo env('APP_FOOTER_TEXT', 'Copyright &copy; ' . date('Y') . ' My Application. All rights reserved.'); ?></strong>
+	<strong><?php echo env('APP_FOOTER_TEXT', 'Copyright &copy; ' . date('Y') . ' AdminBro. All rights reserved.'); ?></strong>
 </footer>
     
       <div class="control-sidebar-bg"></div>

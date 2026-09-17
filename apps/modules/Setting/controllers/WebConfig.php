@@ -28,7 +28,7 @@ class WebConfig extends AUTH_Controller {
 
         // Ambil nilai saat ini dari .env
         $data['cfg'] = [
-            'app_name'           => env('APP_NAME', 'My Application'),
+            'app_name'           => env('APP_NAME', 'AdminBro'),
             'app_skin'           => env('APP_SKIN', 'skin-red'),
             'app_favicon'        => env('APP_FAVICON', ''),
             'app_logo'           => env('APP_LOGO', ''),

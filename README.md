@@ -146,7 +146,7 @@ memastikan database aman dan konfigurasi siap.
 Salin atau edit file `.env` pada root project. Contoh konfigurasi aplikasi:
 
 ```dotenv
-APP_NAME=My Application
+APP_NAME=AdminBro
 APP_SKIN=skin-blue
 APP_FAVICON=assets/tambahan/gambar/44521256.png
 APP_LOGO=assets/tambahan/gambar/logo.png
