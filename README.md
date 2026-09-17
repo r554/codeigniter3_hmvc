@@ -366,5 +366,7 @@ pada environment development terlebih dahulu.
 
 ## Lisensi
 
-Tambahkan informasi lisensi sesuai kebijakan pemilik aplikasi dan library yang
-digunakan sebelum distribusi komersial.
+Project ini dirilis di bawah **MIT License**. Lihat file [LICENSE](LICENSE)
+untuk teks lisensi lengkap.
+
+Copyright (c) 2026 Muhammad Rifqi Firmansyah.
