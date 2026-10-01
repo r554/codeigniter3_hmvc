@@ -5,7 +5,7 @@ Semua perubahan penting pada project ini akan didokumentasikan dalam file ini.
 Format file ini mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-10-01
 
 ### Added
 
@@ -31,6 +31,20 @@ dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.h
   - `/install/requirements`
   - `/install/test_database`
   - `/install/install`
+- Menambahkan fitur Two-Factor Authentication (2FA) berbasis TOTP untuk admin:
+  - Library `Twofa_lib.php` untuk generate secret, QR code, verifikasi kode,
+    dan backup codes.
+  - Model `M_twofa.php` untuk mengelola status 2FA di tabel `admin`.
+  - Halaman verifikasi 2FA (`verify_2fa.php`) dengan tampilan AdminLTE login-box.
+  - Tab **Keamanan** pada halaman `/profile` untuk setup, verifikasi, dan
+    penonaktifan 2FA menggunakan modal AJAX.
+- Menambahkan tab **Keamanan 2FA** pada halaman `/konfigurasi` untuk:
+  - Melihat status 2FA seluruh admin.
+  - Mengatur global toggle 2FA, rate limit, dan jumlah backup codes.
+  - Mereset 2FA admin lain melalui endpoint `reset-2fa-admin`.
+- Menambahkan route untuk manajemen 2FA di level profil dan konfigurasi.
+- Menambahkan backup codes satu kali pakai yang disimpan dalam format JSON.
+- Menambahkan audit logging untuk event 2FA menggunakan helper `activity`.
 
 ### Changed
 
@@ -38,6 +52,12 @@ dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.h
   import database secara manual untuk tabel inti.
 - Dokumentasi konfigurasi environment, backup, storage, email, dan penggunaan
   modul telah diperjelas di `README.md`.
+- `M_auth.php` diperbarui untuk mengambil kolom `two_factor_enabled` dan
+  `two_factor_secret` saat login.
+- `Auth.php` diperbarui untuk meneruskan pengguna dengan 2FA aktif ke halaman
+  verifikasi sebelum mengakses dashboard.
+- Tabel `admin` diperluas dengan kolom `two_factor_enabled`,
+  `two_factor_secret`, dan `two_factor_backup_codes`.
 
 ### Security
 
@@ -45,6 +65,9 @@ dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.h
   `apps/config/install.lock`.
 - Password admin pada proses seed tidak disimpan sebagai plaintext.
 - Installer memvalidasi requirement sistem sebelum menjalankan proses instalasi.
+- Implementasi 2FA dilengkapi dengan rate limiting (maksimal percobaan verifikasi
+  sesuai konfigurasi `.env`) dan session timeout 10 menit untuk setup 2FA.
+- Validasi user ID pada sesi setup 2FA untuk mencegah session hijacking.
 
 ### Known Limitations
 
@@ -65,5 +88,6 @@ dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 - Konfigurasi aplikasi, email, storage, backup, restore, dan activity log.
 - Master data serta modul laporan aplikasi.
 
-[Unreleased]: https://github.com/your-org/your-project/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/your-org/your-project/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/your-org/your-project/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/your-org/your-project/releases/tag/v0.1.0

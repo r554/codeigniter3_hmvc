@@ -13,6 +13,7 @@
           <li><a href="#tab-database" data-toggle="tab"><i class="fa fa-database"></i> Database</a></li>
           <li><a href="#tab-email" data-toggle="tab"><i class="fa fa-envelope"></i> Email / SMTP</a></li>
           <li><a href="#tab-storage" data-toggle="tab"><i class="fa fa-cloud"></i> Storage</a></li>
+          <li><a href="#tab-2fa" data-toggle="tab"><i class="fa fa-shield"></i> Keamanan 2FA</a></li>
           <li><a href="<?= site_url('backup') ?>"><i class="fa fa-archive"></i> Backup & Restore</a></li>
         </ul>
 
@@ -573,6 +574,146 @@
           </div>
           <!-- /.tab-pane storage -->
 
+          <!-- ======== TAB 2FA ======== -->
+          <div class="tab-pane" id="tab-2fa">
+            <form id="form-2fa" class="form-horizontal">
+              <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
+
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-shield"></i> Konfigurasi Two-Factor Authentication (2FA)</h3>
+              </div>
+
+              <div class="callout callout-info" style="margin:15px;">
+                <h4><i class="fa fa-info-circle"></i> Tentang 2FA</h4>
+                <p>Two-Factor Authentication menambahkan lapisan keamanan ekstra pada proses login. Setelah memasukkan username dan password, pengguna harus memasukkan kode 6 digit dari aplikasi authenticator.</p>
+                <p><strong>Catatan:</strong> Setiap admin dapat mengaktifkan/menonaktifkan 2FA untuk akun mereka sendiri melalui halaman profil.</p>
+              </div>
+
+              <!-- Status 2FA Global -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Status 2FA</label>
+                <div class="col-sm-6">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="twofa_enabled" id="twofa_enabled" value="1"
+                             <?= !empty($cfg['twofa_enabled']) ? 'checked' : '' ?>>
+                      <strong>Aktifkan fitur 2FA</strong>
+                      <p class="text-muted" style="margin:0; font-size:12px;">Mengaktifkan fitur Two-Factor Authentication untuk seluruh sistem. Admin dapat mengatur 2FA mereka masing-masing.</p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <hr>
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-users"></i> Status Admin</h3>
+              </div>
+
+              <!-- Tabel Daftar Admin dengan Status 2FA -->
+              <div class="form-group">
+                <div class="col-sm-12">
+                  <div class="table-responsive" style="padding:0 15px;">
+                    <table class="table table-striped table-bordered">
+                      <thead>
+                        <tr>
+                          <th width="50">#</th>
+                          <th>Username</th>
+                          <th>Nama</th>
+                          <th>Email</th>
+                          <th>Grup</th>
+                          <th width="120" class="text-center">Status 2FA</th>
+                          <th width="120" class="text-center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php if (!empty($admin_list)): ?>
+                          <?php $no = 1; foreach ($admin_list as $adm): ?>
+                          <tr>
+                            <td><?= $no++ ?></td>
+                            <td><?= htmlspecialchars($adm['username']) ?></td>
+                            <td><?= htmlspecialchars($adm['nama']) ?></td>
+                            <td><?= htmlspecialchars($adm['email']) ?></td>
+                            <td><?= htmlspecialchars($adm['nama_grup']) ?></td>
+                            <td class="text-center">
+                              <?php if (!empty($adm['two_factor_enabled'])): ?>
+                                <span class="label label-success"><i class="fa fa-check"></i> Aktif</span>
+                              <?php else: ?>
+                                <span class="label label-default"><i class="fa fa-times"></i> Tidak Aktif</span>
+                              <?php endif; ?>
+                            </td>
+                            <td class="text-center">
+                              <?php if (!empty($adm['two_factor_enabled']) && $adm['id'] != $userdata->id): ?>
+                                <button type="button" class="btn btn-danger btn-xs btn-flat btn-reset-2fa"
+                                        data-admin-id="<?= $adm['id'] ?>"
+                                        data-username="<?= htmlspecialchars($adm['username']) ?>">
+                                  <i class="fa fa-undo"></i> Reset 2FA
+                                </button>
+                              <?php else: ?>
+                                <span class="text-muted">-</span>
+                              <?php endif; ?>
+                            </td>
+                          </tr>
+                          <?php endforeach; ?>
+                        <?php else: ?>
+                          <tr>
+                            <td colspan="7" class="text-center text-muted">Tidak ada data admin</td>
+                          </tr>
+                        <?php endif; ?>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="help-block" style="padding:0 15px;">
+                    <i class="fa fa-info-circle"></i> Admin dapat mengaktifkan atau menonaktifkan 2FA mereka sendiri melalui menu Profil.
+                  </p>
+                </div>
+              </div>
+
+              <hr>
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-cogs"></i> Pengaturan Lanjutan</h3>
+              </div>
+
+              <!-- Rate Limiting -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Rate Limit Verifikasi</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type="number" name="twofa_rate_limit" class="form-control" min="3" max="10"
+                           value="<?= !empty($cfg['twofa_rate_limit']) ? $cfg['twofa_rate_limit'] : 5 ?>"
+                           placeholder="5">
+                    <span class="input-group-addon">percobaan</span>
+                  </div>
+                  <p class="help-block">Maksimal percobaan verifikasi kode 2FA dalam 5 menit. Default: 5</p>
+                </div>
+              </div>
+
+              <!-- Backup Codes Count -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Jumlah Backup Codes</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type="number" name="twofa_backup_codes_count" class="form-control" min="5" max="20"
+                           value="<?= !empty($cfg['twofa_backup_codes_count']) ? $cfg['twofa_backup_codes_count'] : 10 ?>"
+                           placeholder="10">
+                    <span class="input-group-addon">kode</span>
+                  </div>
+                  <p class="help-block">Jumlah backup codes yang dihasilkan saat setup 2FA. Default: 10</p>
+                </div>
+              </div>
+
+              <div class="box-footer">
+                <button type="submit" class="btn btn-success btn-flat">
+                  <i class="fa fa-save"></i> Simpan Konfigurasi 2FA
+                </button>
+                <button type="reset" class="btn btn-default btn-flat">
+                  <i class="fa fa-retweet"></i> Reset
+                </button>
+              </div>
+
+            </form>
+          </div>
+          <!-- /.tab-pane 2fa -->
+
         </div>
         <!-- /.tab-content -->
 
@@ -793,6 +934,77 @@ $('#form-storage').submit(function(e) {
         alert('Gagal: ' + result.message);
       }
     }
+  });
+});
+
+// ---- Tab 2FA: Submit AJAX ----
+$('#form-2fa').submit(function(e) {
+  e.preventDefault();
+  var data = $(this).serialize();
+  $.ajax({
+    type: 'POST',
+    url: '<?= site_url('simpan-konfigurasi-2fa') ?>',
+    data: data,
+    beforeSend: function() { $('.loading2').show(); },
+    complete:   function() { $('.loading2').hide(); },
+    success: function(res) {
+      var result = jQuery.parseJSON(res);
+      if (result.status === 'berhasil') {
+        save_berhasil();
+        setTimeout(function() { location.reload(); }, 800);
+      } else {
+        alert('Gagal: ' + result.message);
+      }
+    }
+  });
+});
+
+// ---- Tab 2FA: Reset 2FA Admin ----
+$(document).on('click', '.btn-reset-2fa', function(e) {
+  e.preventDefault();
+  var btn = $(this);
+  var adminId = btn.data('admin-id');
+  var username = btn.data('username');
+
+  swal({
+    title: 'Reset 2FA?',
+    text: 'Apakah Anda yakin ingin mereset 2FA untuk admin \"' + username + '\"? Tindakan ini akan menghapus secret dan backup codes admin tersebut.',
+    type: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dd4b39',
+    confirmButtonText: 'Ya, Reset 2FA',
+    cancelButtonText: 'Batal',
+    closeOnConfirm: false
+  }, function(isConfirm) {
+    if (!isConfirm) return;
+
+    swal.disableButtons();
+
+    $.ajax({
+      type: 'POST',
+      url: '<?= site_url('reset-2fa-admin') ?>',
+      data: { admin_id: adminId, <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>' },
+      beforeSend: function() { btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Mereset...'); },
+      complete: function() { btn.prop('disabled', false).html('<i class="fa fa-undo"></i> Reset 2FA'); },
+      success: function(res) {
+        var result = jQuery.parseJSON(res);
+        if (result.status === 'berhasil') {
+          swal({
+            title: 'Berhasil!',
+            text: result.message,
+            type: 'success',
+            confirmButtonText: 'OK'
+          }, function() {
+            location.reload();
+          });
+        } else {
+          swal('Gagal!', result.message, 'error');
+        }
+      },
+      error: function() {
+        swal('Error!', 'Terjadi kesalahan saat menghubungi server.', 'error');
+      }
+    });
   });
 });
 </script>

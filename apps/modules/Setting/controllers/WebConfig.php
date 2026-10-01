@@ -7,6 +7,7 @@ class WebConfig extends AUTH_Controller {
     {
         parent::__construct();
         $this->load->model('M_sidebar');
+        $this->load->model('Default/M_twofa');
         $this->load->helper('activity');
     }
 
@@ -37,6 +38,9 @@ class WebConfig extends AUTH_Controller {
             'app_fixed_layout'   => env('APP_FIXED_LAYOUT', ''),
             'app_sidebar_collapse' => env('APP_SIDEBAR_COLLAPSE', ''),
             'app_boxed_layout'   => env('APP_BOXED_LAYOUT', ''),
+            'twofa_enabled'      => env('TWOFA_ENABLED', '0'),
+            'twofa_rate_limit'   => env('TWOFA_RATE_LIMIT', '5'),
+            'twofa_backup_codes_count' => env('TWOFA_BACKUP_CODES_COUNT', '10'),
         ];
 
         // Ambil konfigurasi database saat ini
@@ -50,6 +54,14 @@ class WebConfig extends AUTH_Controller {
             'dbdriver' => $db['default']['dbdriver'],
             'char_set' => $db['default']['char_set'],
         ];
+
+        // Ambil daftar admin dengan status 2FA
+        $this->db->select('admin.id, admin.username, admin.nama, admin.email, admin.two_factor_enabled, grup.nama_grup');
+        $this->db->from('admin');
+        $this->db->join('grup', 'grup.grup_id = admin.grup_id', 'left');
+        $this->db->order_by('admin.username', 'ASC');
+        $query = $this->db->get();
+        $data['admin_list'] = $query->result_array();
 
         $this->loadkonten('v_config/v_home', $data);
     }
@@ -330,6 +342,61 @@ class WebConfig extends AUTH_Controller {
         $data['judul']    = 'Dokumentasi Storage Helper';
         $this->load->view('Dashboard/layouts/header', $data);
         $this->load->view('v_config/v_docs_storage', $data);
+    }
+
+    public function simpan_2fa()
+    {
+        // Ambil nilai dari form
+        $twofa_enabled = $this->input->post('twofa_enabled') ? '1' : '0';
+        $rate_limit = $this->input->post('twofa_rate_limit') ?: '5';
+        $backup_codes_count = $this->input->post('twofa_backup_codes_count') ?: '10';
+
+        // Validasi nilai
+        $rate_limit = max(3, min(10, intval($rate_limit)));
+        $backup_codes_count = max(5, min(20, intval($backup_codes_count)));
+
+        // Simpan ke .env
+        set_env('TWOFA_ENABLED', $twofa_enabled);
+        set_env('TWOFA_RATE_LIMIT', $rate_limit);
+        set_env('TWOFA_BACKUP_CODES_COUNT', $backup_codes_count);
+
+        log_activity('save_config', 'Simpan konfigurasi 2FA', 'WebConfig');
+        echo json_encode(['status' => 'berhasil']);
+    }
+
+    public function reset_2fa_admin()
+    {
+        $admin_id = $this->input->post('admin_id');
+
+        if (empty($admin_id) || !is_numeric($admin_id)) {
+            echo json_encode(['status' => 'error', 'message' => 'ID admin tidak valid.']);
+            return;
+        }
+
+        // Prevent self-reset from this panel to avoid accidental lockout
+        if ($admin_id == $this->userdata->id) {
+            echo json_encode(['status' => 'error', 'message' => 'Anda tidak dapat mereset 2FA akun Anda sendiri dari menu ini. Gunakan halaman Profil.']);
+            return;
+        }
+
+        $admin = $this->db->get_where('admin', ['id' => $admin_id])->row();
+        if (!$admin) {
+            echo json_encode(['status' => 'error', 'message' => 'Admin tidak ditemukan.']);
+            return;
+        }
+
+        if (empty($admin->two_factor_enabled)) {
+            echo json_encode(['status' => 'error', 'message' => 'Admin ini belum mengaktifkan 2FA.']);
+            return;
+        }
+
+        $result = $this->M_twofa->disable_2fa($admin_id);
+        if ($result) {
+            log_activity('2fa_reset', 'Reset 2FA untuk admin: ' . $admin->username, 'WebConfig');
+            echo json_encode(['status' => 'berhasil', 'message' => '2FA untuk admin <strong>' . htmlspecialchars($admin->username) . '</strong> berhasil direset.']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Gagal mereset 2FA admin.']);
+        }
     }
 
     private function _upload_file($field, $upload_path)

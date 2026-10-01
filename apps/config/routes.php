@@ -65,6 +65,15 @@ $route['docs-email'] = 'Setting/WebConfig/docs_email';
 $route['simpan-konfigurasi-storage'] = 'Setting/WebConfig/simpan_storage';
 $route['test-koneksi-storage'] = 'Setting/WebConfig/test_koneksi_storage';
 $route['docs-storage'] = 'Setting/WebConfig/docs_storage';
+$route['simpan-konfigurasi-2fa'] = 'Setting/WebConfig/simpan_2fa';
+$route['reset-2fa-admin'] = 'Setting/WebConfig/reset_2fa_admin';
+
+// Profile 2FA Routes
+$route['profile/generate-2fa'] = 'Setting/Profile/generate_2fa_secret';
+$route['profile/verify-2fa'] = 'Setting/Profile/verify_and_enable_2fa';
+$route['profile/disable-2fa'] = 'Setting/Profile/disable_2fa_profile';
+$route['profile/get-backup-codes'] = 'Setting/Profile/get_backup_codes';
+
 
 /*   route modul backup & restore  */
 $route['backup']                 = 'Setting/Backup/index';
