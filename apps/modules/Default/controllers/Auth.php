@@ -332,4 +332,204 @@ class Auth extends CI_Controller {
 		
 		redirect('Dashboard');
 	}
+
+	// ============================================================
+	// GOOGLE OAUTH2 LOGIN
+	// ============================================================
+
+	/**
+	 * Redirect user to Google OAuth consent screen
+	 */
+	public function google_login() {
+		// Check if Google login is enabled
+		if (env('GOOGLE_LOGIN_ENABLED', '0') !== '1') {
+			$this->session->set_flashdata('error_msg', 'Login dengan Google tidak diaktifkan.');
+			redirect('login');
+			return;
+		}
+
+		$client_id = env('GOOGLE_CLIENT_ID', '');
+		if (empty($client_id)) {
+			$this->session->set_flashdata('error_msg', 'Google Client ID belum dikonfigurasi.');
+			redirect('login');
+			return;
+		}
+
+		// Generate state token for CSRF protection
+		$state = bin2hex(random_bytes(16));
+		$this->session->set_userdata('google_oauth_state', $state);
+
+		$redirect_uri = site_url('auth/google/callback');
+
+		$params = http_build_query([
+			'client_id'     => $client_id,
+			'redirect_uri'  => $redirect_uri,
+			'response_type' => 'code',
+			'scope'         => 'openid email profile',
+			'state'         => $state,
+			'access_type'   => 'online',
+			'prompt'        => 'select_account',
+		]);
+
+		redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $params);
+	}
+
+	/**
+	 * Handle Google OAuth callback
+	 */
+	public function google_callback() {
+		// Check if Google login is enabled
+		if (env('GOOGLE_LOGIN_ENABLED', '0') !== '1') {
+			$this->session->set_flashdata('error_msg', 'Login dengan Google tidak diaktifkan.');
+			redirect('login');
+			return;
+		}
+
+		// Check for error from Google
+		if ($this->input->get('error')) {
+			$this->session->set_flashdata('error_msg', 'Login Google dibatalkan.');
+			redirect('login');
+			return;
+		}
+
+		$code  = $this->input->get('code');
+		$state = $this->input->get('state');
+
+		// Validate state token (CSRF protection)
+		$saved_state = $this->session->userdata('google_oauth_state');
+		$this->session->unset_userdata('google_oauth_state');
+
+		if (empty($code) || empty($state) || $state !== $saved_state) {
+			$this->session->set_flashdata('error_msg', 'Sesi login Google tidak valid. Silakan coba lagi.');
+			redirect('login');
+			return;
+		}
+
+		$client_id     = env('GOOGLE_CLIENT_ID', '');
+		$client_secret = env('GOOGLE_CLIENT_SECRET', '');
+		$redirect_uri  = site_url('auth/google/callback');
+
+		// Exchange authorization code for access token
+		$token_data = $this->_google_curl_post('https://oauth2.googleapis.com/token', [
+			'code'          => $code,
+			'client_id'     => $client_id,
+			'client_secret' => $client_secret,
+			'redirect_uri'  => $redirect_uri,
+			'grant_type'    => 'authorization_code',
+		]);
+
+		if (!$token_data || empty($token_data->access_token)) {
+			$this->session->set_flashdata('error_msg', 'Gagal mendapatkan token dari Google.');
+			redirect('login');
+			return;
+		}
+
+		// Get user info from Google
+		$user_info = $this->_google_curl_get('https://www.googleapis.com/oauth2/v2/userinfo', $token_data->access_token);
+
+		if (!$user_info || empty($user_info->email)) {
+			$this->session->set_flashdata('error_msg', 'Gagal mendapatkan informasi akun Google.');
+			redirect('login');
+			return;
+		}
+
+		// Ensure google_id column exists (auto-migration)
+		$this->_ensure_google_id_column();
+
+		// Find admin user by google_id or email
+		$data = $this->M_auth->login_google($user_info->id, $user_info->email);
+
+		if (!$data) {
+			$this->session->set_flashdata('error_msg', 'Akun Google (' . $user_info->email . ') tidak terdaftar sebagai admin.');
+			redirect('login');
+			return;
+		}
+
+		// Check user status
+		if ($data->status != 3) {
+			$this->session->set_flashdata('error_msg', 'Maaf user belum aktif.');
+			redirect('login');
+			return;
+		}
+
+		// Check if user has 2FA enabled
+		if (isset($data->two_factor_enabled) && $data->two_factor_enabled == 1) {
+			$this->session->set_userdata('pending_2fa_user_id', $data->id);
+			$this->session->set_userdata('pending_2fa_username', $data->username);
+			$this->session->set_userdata('pending_2fa_time', time());
+			log_activity('login_google_2fa_pending', 'Login Google dengan 2FA: ' . $user_info->email, 'Auth');
+			redirect('Default/Auth/verify_2fa');
+			return;
+		}
+
+		// Complete login
+		$session = [
+			'userdata' => $data,
+			'status'   => "Loged in",
+			'id'       => $data->id,
+			'username' => $data->username,
+		];
+
+		$this->session->set_userdata($session);
+		$this->M_auth->update($data->id, 3);
+		$this->M_auth->update_user($data->id, [
+			'last_login_user' => date('Y-m-d H:i:s')
+		]);
+
+		log_activity('login_google', 'Login dengan Google berhasil: ' . $user_info->email, 'Auth');
+		redirect('Dashboard');
+	}
+
+	/**
+	 * POST request via cURL
+	 */
+	private function _google_curl_post($url, $post_data) {
+		$ch = curl_init();
+		curl_setopt_array($ch, [
+			CURLOPT_URL            => $url,
+			CURLOPT_POST           => true,
+			CURLOPT_POSTFIELDS     => http_build_query($post_data),
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => true,
+			CURLOPT_TIMEOUT        => 15,
+		]);
+		$response = curl_exec($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		if ($http_code !== 200) return null;
+		return json_decode($response);
+	}
+
+	/**
+	 * GET request via cURL with Bearer token
+	 */
+	private function _google_curl_get($url, $access_token) {
+		$ch = curl_init();
+		curl_setopt_array($ch, [
+			CURLOPT_URL            => $url,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => true,
+			CURLOPT_TIMEOUT        => 15,
+			CURLOPT_HTTPHEADER     => [
+				'Authorization: Bearer ' . $access_token,
+			],
+		]);
+		$response = curl_exec($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		if ($http_code !== 200) return null;
+		return json_decode($response);
+	}
+
+	/**
+	 * Ensure google_id column exists in admin table (auto-migration)
+	 */
+	private function _ensure_google_id_column() {
+		$this->load->database();
+		if (!$this->db->field_exists('google_id', 'admin')) {
+			$this->db->query("ALTER TABLE `admin` ADD COLUMN `google_id` VARCHAR(255) DEFAULT NULL AFTER `email`");
+		}
+	}
 }

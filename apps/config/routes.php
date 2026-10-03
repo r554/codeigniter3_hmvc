@@ -67,6 +67,11 @@ $route['test-koneksi-storage'] = 'Setting/WebConfig/test_koneksi_storage';
 $route['docs-storage'] = 'Setting/WebConfig/docs_storage';
 $route['simpan-konfigurasi-2fa'] = 'Setting/WebConfig/simpan_2fa';
 $route['reset-2fa-admin'] = 'Setting/WebConfig/reset_2fa_admin';
+$route['simpan-konfigurasi-google'] = 'Setting/WebConfig/simpan_google';
+
+/*   route google login  */
+$route['auth/google'] = 'Default/Auth/google_login';
+$route['auth/google/callback'] = 'Default/Auth/google_callback';
 
 // Profile 2FA Routes
 $route['profile/generate-2fa'] = 'Setting/Profile/generate_2fa_secret';

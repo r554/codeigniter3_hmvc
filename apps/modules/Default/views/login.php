@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>AdminBRO | Log in</title>
-  <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  
   <!-- Bootstrap 3.3.6 -->
   <link rel="stylesheet" href="<?php echo base_url(); ?>assets/bootstrap/css/bootstrap.min.css">
   <!-- Font Awesome -->
@@ -24,12 +24,15 @@
     body {
       background: #d2d6de;
       min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     
     .login-box {
       width: 360px;
-      margin: 7% auto;
+      margin: 0 auto;
     }
     
     .login-logo {
@@ -49,6 +52,8 @@
       padding: 20px;
       border-top: 0;
       color: #666;
+      border-radius: 4px; /* Sedikit rounded agar lebih modern */
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Shadow halus */
     }
     
     .login-box-msg {
@@ -111,9 +116,26 @@
       font-size: 14px;
     }
     
+    /* --- PERBAIKAN ALERT DI SINI --- */
     .alert {
       border-radius: 3px;
       margin-top: 15px;
+      padding: 10px 15px; /* Padding lebih kecil */
+      font-size: 13px; /* Font lebih kecil */
+      border: 1px solid transparent;
+    }
+    
+    .alert-danger {
+      background-color: #f2dede;
+      border-color: #ebccd1;
+      color: #a94442;
+    }
+
+    /* Merapikan ikon peringatan agar tidak terlalu besar */
+    .alert .icon {
+      margin-right: 10px;
+      font-size: 16px; /* Ukuran ikon disesuaikan */
+      vertical-align: middle;
     }
     
     .social-auth-links {
@@ -143,17 +165,6 @@
       font-size: 1.6em;
       text-align: center;
       border-right: 1px solid rgba(0,0,0,0.2);
-    }
-    
-    .btn-facebook {
-      color: #fff;
-      background-color: #3b5998;
-      border-color: rgba(0,0,0,0.2);
-    }
-    
-    .btn-facebook:hover {
-      background-color: #30497c;
-      border-color: rgba(0,0,0,0.2);
     }
     
     .btn-google {
@@ -219,16 +230,29 @@
         </div>
       </form>
       
+      <?php
+      // Show Google login button only if enabled and credentials are configured
+      $google_enabled = env('GOOGLE_LOGIN_ENABLED', '0') === '1';
+      $google_configured = !empty(env('GOOGLE_CLIENT_ID', '')) && !empty(env('GOOGLE_CLIENT_SECRET', ''));
+      if ($google_enabled && $google_configured): ?>
       <div class="social-auth-links text-center">
         <p>- OR -</p>
-        <a href="#" class="btn btn-block btn-social btn-facebook btn-flat"><i class="fa fa-facebook"></i> Sign in using Facebook</a>
-        <a href="#" class="btn btn-block btn-social btn-google btn-flat"><i class="fa fa-google-plus"></i> Sign in using Google+</a>
+        <a href="<?php echo site_url('auth/google'); ?>" class="btn btn-block btn-social btn-google btn-flat">
+          <i class="fa fa-google"></i> Sign in with Google
+        </a>
       </div>
+      <?php endif; ?>
+            
+      <?php 
+      // Perbaikan Logika Alert
+      $error_msg = $this->session->flashdata('error_msg');
+      if (!empty($error_msg)): ?>
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-triangle icon"></i>
+            <?php echo $error_msg; ?>
+        </div>
+      <?php endif; ?>
       
-      <a href="#">I forgot my password</a><br>
-      <a href="#" class="text-center">Register a new membership</a>
-      
-      <?php echo show_err_msg($this->session->flashdata('error_msg')); ?>
     </div>
   </div>
 

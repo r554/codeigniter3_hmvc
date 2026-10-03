@@ -41,6 +41,9 @@ class WebConfig extends AUTH_Controller {
             'twofa_enabled'      => env('TWOFA_ENABLED', '0'),
             'twofa_rate_limit'   => env('TWOFA_RATE_LIMIT', '5'),
             'twofa_backup_codes_count' => env('TWOFA_BACKUP_CODES_COUNT', '10'),
+            'google_login_enabled' => env('GOOGLE_LOGIN_ENABLED', '0'),
+            'google_client_id'     => env('GOOGLE_CLIENT_ID', ''),
+            'google_client_secret' => env('GOOGLE_CLIENT_SECRET', ''),
         ];
 
         // Ambil konfigurasi database saat ini
@@ -361,6 +364,23 @@ class WebConfig extends AUTH_Controller {
         set_env('TWOFA_BACKUP_CODES_COUNT', $backup_codes_count);
 
         log_activity('save_config', 'Simpan konfigurasi 2FA', 'WebConfig');
+        echo json_encode(['status' => 'berhasil']);
+    }
+
+    public function simpan_google()
+    {
+        $google_enabled  = $this->input->post('google_login_enabled') ? '1' : '0';
+        $client_id       = trim($this->input->post('google_client_id'));
+        $client_secret   = $this->input->post('google_client_secret');
+
+        set_env('GOOGLE_LOGIN_ENABLED', $google_enabled);
+        set_env('GOOGLE_CLIENT_ID', $client_id);
+        // Hanya update secret jika diisi (hindari menghapus secret yang ada)
+        if ($client_secret !== '') {
+            set_env('GOOGLE_CLIENT_SECRET', $client_secret);
+        }
+
+        log_activity('save_config', 'Simpan konfigurasi Google Login', 'WebConfig');
         echo json_encode(['status' => 'berhasil']);
     }
 

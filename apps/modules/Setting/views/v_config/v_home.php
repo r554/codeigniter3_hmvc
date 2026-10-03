@@ -14,6 +14,7 @@
           <li><a href="#tab-email" data-toggle="tab"><i class="fa fa-envelope"></i> Email / SMTP</a></li>
           <li><a href="#tab-storage" data-toggle="tab"><i class="fa fa-cloud"></i> Storage</a></li>
           <li><a href="#tab-2fa" data-toggle="tab"><i class="fa fa-shield"></i> Keamanan 2FA</a></li>
+          <li><a href="#tab-google" data-toggle="tab"><i class="fa fa-google"></i> Login Google</a></li>
           <li><a href="<?= site_url('backup') ?>"><i class="fa fa-archive"></i> Backup & Restore</a></li>
         </ul>
 
@@ -714,6 +715,105 @@
           </div>
           <!-- /.tab-pane 2fa -->
 
+          <!-- ======== TAB GOOGLE LOGIN ======== -->
+          <div class="tab-pane" id="tab-google">
+            <form id="form-google" class="form-horizontal">
+              <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
+
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-google"></i> Konfigurasi Login Google</h3>
+              </div>
+
+              <div class="callout callout-info" style="margin:15px;">
+                <h4><i class="fa fa-info-circle"></i> Cara Mendapatkan Client ID & Client Secret</h4>
+                <ol style="margin-bottom:0;">
+                  <li>Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console &rarr; Credentials</a></li>
+                  <li>Buat project baru atau pilih project yang sudah ada</li>
+                  <li>Klik <strong>Create Credentials</strong> &rarr; <strong>OAuth client ID</strong></li>
+                  <li>Pilih Application type: <strong>Web application</strong></li>
+                  <li>Isi <strong>Authorized redirect URIs</strong> dengan URL di bawah ini</li>
+                  <li>Salin <strong>Client ID</strong> dan <strong>Client Secret</strong> ke form ini</li>
+                </ol>
+              </div>
+
+              <!-- Redirect URI -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Redirect URI</label>
+                <div class="col-sm-7">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="google_redirect_uri"
+                           value="<?= site_url('auth/google/callback') ?>" readonly>
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default btn-flat" id="btn-copy-redirect" title="Salin">
+                        <i class="fa fa-copy"></i>
+                      </button>
+                    </span>
+                  </div>
+                  <p class="help-block">Daftarkan URL ini di <strong>Authorized redirect URIs</strong> pada Google Cloud Console.</p>
+                </div>
+              </div>
+
+              <!-- Status Google Login -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Status</label>
+                <div class="col-sm-6">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="google_login_enabled" id="google_login_enabled" value="1"
+                             <?= !empty($cfg['google_login_enabled']) ? 'checked' : '' ?>>
+                      <strong>Aktifkan Login dengan Google</strong>
+                      <p class="text-muted" style="margin:0; font-size:12px;">Menampilkan tombol "Sign in with Google" di halaman login. Hanya admin yang emailnya sudah terdaftar yang dapat login dengan Google.</p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <hr>
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-key"></i> OAuth Credentials</h3>
+              </div>
+
+              <!-- Client ID -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Client ID</label>
+                <div class="col-sm-7">
+                  <input type="text" name="google_client_id" id="google_client_id" class="form-control"
+                         value="<?= htmlspecialchars($cfg['google_client_id']) ?>"
+                         placeholder="xxxx.apps.googleusercontent.com" autocomplete="off">
+                </div>
+              </div>
+
+              <!-- Client Secret -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">Client Secret</label>
+                <div class="col-sm-7">
+                  <div class="input-group">
+                    <input type="password" name="google_client_secret" id="google_client_secret" class="form-control"
+                           value="<?= htmlspecialchars($cfg['google_client_secret']) ?>"
+                           placeholder="Client Secret" autocomplete="new-password">
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default btn-flat" id="toggleGoogleSecret">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                    </span>
+                  </div>
+                  <p class="help-block">Kosongkan jika tidak ingin mengubah secret yang sudah tersimpan.</p>
+                </div>
+              </div>
+
+              <div class="box-footer">
+                <button type="submit" class="btn btn-success btn-flat">
+                  <i class="fa fa-save"></i> Simpan Konfigurasi Google
+                </button>
+                <button type="reset" class="btn btn-default btn-flat">
+                  <i class="fa fa-retweet"></i> Reset
+                </button>
+              </div>
+
+            </form>
+          </div>
+          <!-- /.tab-pane google -->
+
         </div>
         <!-- /.tab-content -->
 
@@ -1005,6 +1105,50 @@ $(document).on('click', '.btn-reset-2fa', function(e) {
         swal('Error!', 'Terjadi kesalahan saat menghubungi server.', 'error');
       }
     });
+  });
+});
+
+// ---- Tab Google Login: Toggle secret ----
+$('#toggleGoogleSecret').on('click', function() {
+  var inp = $('#google_client_secret');
+  var icon = $(this).find('i');
+  if (inp.attr('type') === 'password') {
+    inp.attr('type', 'text');
+    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+  } else {
+    inp.attr('type', 'password');
+    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+  }
+});
+
+// ---- Tab Google Login: Copy redirect URI ----
+$('#btn-copy-redirect').on('click', function() {
+  var inp = document.getElementById('google_redirect_uri');
+  inp.select();
+  document.execCommand('copy');
+  $(this).html('<i class="fa fa-check"></i>');
+  setTimeout(function() { $('#btn-copy-redirect').html('<i class="fa fa-copy"></i>'); }, 1500);
+});
+
+// ---- Tab Google Login: Submit AJAX ----
+$('#form-google').submit(function(e) {
+  e.preventDefault();
+  var data = $(this).serialize();
+  $.ajax({
+    type: 'POST',
+    url: '<?= site_url('simpan-konfigurasi-google') ?>',
+    data: data,
+    beforeSend: function() { $('.loading2').show(); },
+    complete:   function() { $('.loading2').hide(); },
+    success: function(res) {
+      var result = jQuery.parseJSON(res);
+      if (result.status === 'berhasil') {
+        save_berhasil();
+        setTimeout(function() { location.reload(); }, 800);
+      } else {
+        alert('Gagal: ' + result.message);
+      }
+    }
   });
 });
 </script>
